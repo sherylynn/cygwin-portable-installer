@@ -1,4 +1,4 @@
-@echo off
+﻿@echo off
 
 ::
 :: Copyright 2017-2021 by Vegard IT GmbH (https://vegardit.com) and the cygwin-portable-installer contributors.
@@ -30,11 +30,11 @@ for %%a in (%*) do (
 :: You can customize the following variables to your needs before running the batch file:
 
 :: set proxy if required (unfortunately Cygwin setup.exe does not have commandline options to specify proxy user credentials)
-set PROXY_HOST=
-set PROXY_PORT=8080
+set PROXY_HOST=127.0.0.1
+set PROXY_PORT=10808
 
 :: change the URL to the closest mirror https://cygwin.com/mirrors.html
-set CYGWIN_MIRROR=https://linux.rz.ruhr-uni-bochum.de/download/cygwin
+set CYGWIN_MIRROR=https://mirrors.tuna.tsinghua.edu.cn/cygwin/
 
 :: one of: auto,64,32 - specifies if 32 or 64 bit version should be installed or automatically detected based on current OS architecture
 set CYGWIN_ARCH=auto
@@ -43,7 +43,7 @@ set CYGWIN_ARCH=auto
 set CYGWIN_USERNAME=root
 
 :: select the packages to be installed automatically via apt-cyg
-set CYGWIN_PACKAGES=bash-completion,bc,bzip,coreutils,curl,dos2unix,expect,git,git-svn,gnupg,inetutils,jq,lz4,mc,nc,openssh,openssl,perl,psmisc,python37,pv,rsync,ssh-pageant,screen,subversion,unzip,vim,wget,zip,zstd
+set CYGWIN_PACKAGES=bash-completion,bc,coreutils,curl,dos2unix,expect,git,git-svn,gnupg,inetutils,jq,lz4,mc,nc,openssh,openssl,perl,psmisc,python37,python27,pv,rsync,ssh-pageant,screen,subversion,unzip,vim,wget,zip,zstd,zsh,tmux,lua
 
 :: if set to 'yes' the local package cache created by cygwin setup will be deleted after installation/update
 set DELETE_CYGWIN_PACKAGE_CACHE=no
@@ -74,7 +74,7 @@ set INSTALL_TESTSSL_SH=no
 set TESTSSL_GIT_BRANCH=3.0
 
 :: use ConEmu based tabbed terminal instead of Mintty based single window terminal, see https://conemu.github.io/
-set INSTALL_CONEMU=yes
+set INSTALL_CONEMU=no
 set CON_EMU_OPTIONS=-Title cygwin-portable ^
  -QuitOnClose
 
@@ -83,8 +83,10 @@ set INSTALL_WINPTY=yes
 set WINPTY_VERSION=0.4.3
 
 :: add more path if required, but at the cost of runtime performance (e.g. slower forks)
-set "CYGWIN_PATH=%%SystemRoot%%\system32;%%SystemRoot%%"
-
+:: 下面是引入系统变量 可能有原先的node等环境 windows build的环境
+:: set "CYGWIN_PATH=%%SystemRoot%%\system32;%%SystemRoot%%"
+:: 下面是不引入系统的变量
+set "CYGWIN_PATH=%%PATH%%"
 :: set Mintty options, see https://cdn.rawgit.com/mintty/mintty/master/docs/mintty.1.html#CONFIGURATION
 set MINTTY_OPTIONS=--Title cygwin-portable ^
   -o Columns=160 ^
@@ -130,7 +132,7 @@ if not exist "%CYGWIN_ROOT%" (
   md "%CYGWIN_ROOT%" || goto :fail
 ) else (
   echo Granting user [%USERNAME%] full access to Cygwin root [%CYGWIN_ROOT%]...
-  icacls "%CYGWIN_ROOT%" /T /grant "%USERNAME%:(CI)(OI)(F)"
+  echo icacls "%CYGWIN_ROOT%" /T /grant "%USERNAME%:(CI)(OI)(F)"
 )
 
 
@@ -498,7 +500,7 @@ echo Creating launcher [%Start_cmd%]...
   echo.
   echo set "USERNAME=%CYGWIN_USERNAME%"
   echo set "HOME=/home/%%USERNAME%%"
-  echo set SHELL=/bin/bash
+  echo set SHELL=/bin/zsh
   echo set HOMEDRIVE=%%CYGWIN_DRIVE%%
   echo set "HOMEPATH=%%~p0cygwin\home\%%USERNAME%%"
   echo set GROUP=None
@@ -537,9 +539,9 @@ echo Creating launcher [%Start_cmd%]...
   )
   echo ^) else (
   echo   if "!arg1!" == "no-mintty" (
-  echo     bash --login -i
+  echo     zsh --login -i
   echo   ^) else (
-  echo     bash --login -c %%*
+  echo     zsh --login -c %%*
   echo   ^)
   echo ^)
   echo.
